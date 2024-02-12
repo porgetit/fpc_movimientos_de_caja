@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Movimientos de caja</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+</head>
+<body>
+
+<div class="container mt-4">
+    <h2 class="mb-4">Movimientos de caja</h2>
+
+    <form id="registroForm">
+        <div class="form-row">
+            <div class="col">
+                <input type="date" class="form-control" id="fecha" placeholder="Fecha">
+            </div>
+            <div class="col">
+                <input type="text" class="form-control" id="producto" placeholder="Producto" required>
+            </div>
+            <div class="col">
+                <input type="number" class="form-control" id="cantidad" placeholder="Cantidad" required>
+            </div>
+            <div class="col">
+                <input type="number" step="50" class="form-control" id="valorUnitario" placeholder="Valor Unitario" required>
+            </div>
+            <div class="col">
+                <button type="button" class="btn btn-primary" onclick="checkValues()">Agregar Registro</button>
+            </div>
+        </div>
+    </form>
+
+    <ul class="list-group mt-4" id="listaRegistros"></ul>
+
+    <div class="mt-4">
+        <strong>Total Ventas:</strong> <span id="totalVentas">$0.00</span>
+    </div>
+</div>
+
+<script src="core.js"></script>
+</body>
+</html>
