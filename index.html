@@ -9,35 +9,45 @@
 <body>
 
 <div class="container mt-4">
-    <h2 class="mb-4">Movimientos de caja</h2>
+    <header>
+        <h2 class="mb-4">Movimientos de caja</h2>
+    </header>
 
-    <form id="registroForm">
-        <div class="form-row">
-            <div class="col">
-                <input type="date" class="form-control" id="fecha" placeholder="Fecha">
+    <main>
+        <form id="registroForm">
+            <div class="form-row">
+                <div class="col">
+                    <input type="date" class="form-control" id="date" placeholder="Fecha">
+                </div>
+                <div class="col">
+                    <input type="text" class="form-control" id="product" placeholder="Producto" required>
+                </div>
+                <div class="col">
+                    <input type="number" class="form-control" id="amount" placeholder="Cantidad" required>
+                </div>
+                <div class="col">
+                    <input type="number" class="form-control" id="unitPrice" placeholder="Valor Unitario" required>
+                </div>
+                <div class="col">
+                    <button type="button" class="btn btn-primary" id="addRecordBtn">Agregar Registro</button>
+                </div>
             </div>
-            <div class="col">
-                <input type="text" class="form-control" id="producto" placeholder="Producto" required>
-            </div>
-            <div class="col">
-                <input type="number" class="form-control" id="cantidad" placeholder="Cantidad" required>
-            </div>
-            <div class="col">
-                <input type="number" step="50" class="form-control" id="valorUnitario" placeholder="Valor Unitario" required>
-            </div>
-            <div class="col">
-                <button type="button" class="btn btn-primary" onclick="checkValues()">Agregar Registro</button>
-            </div>
+        </form>
+    
+        <ul class="list-group mt-4" id="recordsList"></ul>
+    
+        <div class="mt-4">
+            <strong>Total Ventas:</strong> <span id="totalSales">$0.00</span>
         </div>
-    </form>
+    </main>
 
-    <ul class="list-group mt-4" id="listaRegistros"></ul>
-
-    <div class="mt-4">
-        <strong>Total Ventas:</strong> <span id="totalVentas">$0.00</span>
-    </div>
+    <footer class="text-center">
+        <!-- Copyright -->
+        <div class="text-center text-dark p-3" id="copyright"></div>
+        <!-- Copyright -->
+      </footer>
 </div>
 
-<script src="core.js"></script>
+<script src="js/core.js"></script>
 </body>
 </html>
