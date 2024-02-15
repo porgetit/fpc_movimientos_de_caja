@@ -1,87 +1,125 @@
-class DomManipulator {
-    constructor() {
-        
+import RecordsManager from "./RecordsManager";
+
+/**
+ * @todo Debo agregar métodos para formatear las entradas a medida que se ingresan, por ejemplo, aplicar capitalizaciones a la entrada de producto o formato de moneda a la entrada de valor unitario, este último sin que se modifique internamente el valor o asegurandome de que se pase el valor adecuado.
+ */
+export default class DomManipulator {
+    /**
+     * 
+     * @param {Document} document 
+     */
+    constructor(document) {
+        this.document = document;
     }
-}
 
-// DomManipulator
-function actualizarListaRegistros() {
-    const listaRegistros = document.getElementById('listaRegistros');
-    listaRegistros.innerHTML = '';
+    /**
+     * 
+     * @param {[{date: Date, product: string, amount: integer, unitPrice: float, totalPrice: float}]} records 
+     * @requires RecordManager
+     * @todo Refactorizar para evitar sobrecargar de responsabilidades. Ejemplo, operaciones de recarga dentro de la asignación de los eventos onclick
+     */
+    reloadList(records) {
+        const list = this.document.getElementById('list');
+        list.innerHTML = '';
 
-    // Ordenar los registros por fecha de forma ascendente
-    registros.sort((a, b) => new Date(a.fecha) - new Date(b.fecha));
+        for (let record of records) {
+            const listItem = this.document.createElement('li');
+            listItem.className = 'list-group-item';
+            listItem.id = record.date;
+            listItem.innerHTML = `<strong>${record.date}</strong> - ${record.product} - Cantidad: ${record.amount} - Valor Unitario: $${record.unitPrice} - Total: $${record.totalPrice} <button class="btn btn-sm float-right" id="deleteRecordBtn_${record.date}"><img src="src/trash_can.svg" alt="Delete" width="24" height="24"></button><button class="btn btn-sm float-right" id="recordFromListItemToUpdateFormBtn_${record.date}"><img src="src/pencil.svg" alt="Update" width="24" height="24"></button>`;
+            list.appendChild(listItem);
 
-    for (let registro of registros) {
-        const listItem = document.createElement('li');
-        listItem.className = 'list-group-item';
-        listItem.id = registro.fecha;
-        listItem.innerHTML = `<strong>${registro.fecha}</strong> - ${registro.producto} - Cantidad: ${registro.cantidad} - Valor Unitario: $${registro.valorUnitario} - Total: $${registro.valorTotal} <button class="btn btn-sm float-right" id="eliminarRegistroBtn_${registro.fecha}"><img src="src/trash_can.svg" alt="Eliminar" width="24" height="24"></button><button class="btn btn-sm float-right" id="actualizarRegistroBtn_${registro.fecha}"><img src="src/pencil.svg" alt="Editar" width="24" height="24"></button>`;
-        listaRegistros.appendChild(listItem);
-        document.getElementById(`eliminarRegistroBtn_${registro.fecha}`).onclick = function() {
-            deleteThis(registro.fecha);
+            this.document.getElementById(`deleteRecordBtn_${record.date}`).onclick = () => {
+                const self = this;
+                new RecordsManager().deleteRecord(record.date, (response) => {
+                    if (!response.success) {
+                        alert('Error: la solicitud de eliminación no se completó con éxito. Revise la consola para más detalles.');
+                    }
+
+                    
+                    new RecordsManager().recordsCharger(record.date, (response) => {
+                        if (!response.success) {
+                            alert('Error: nos se ha podido recuperar los datos. Revise la consola para más detalles.');
+                            return;
+                        }
+
+                        self.reloadList(response.records);
+                    });
+                });
+            };
+
+            this.document.getElementById(`recordFromListItemToUpdateFormBtn_${record.date}`).onclick = () => {
+                this.recordFromListItemToUpdateForm(date, records);
+            };
         }
-        document.getElementById(`actualizarRegistroBtn_${registro.fecha}`).onclick = function() {
-            updateThis(registro.fecha);
+
+        // Ordenar los registros por fecha de forma ascendente
+        records.sort((a, b) => new Date(a.date) - new Date(b.date));
+    }
+
+    setTotalSales(records) {
+        records.forEach(record => {
+            if (!record.hasOwnProperty('totalPrice')) {
+                record.totalPrice = record.amount * record.unitPrice;
+            }
+        });
+
+        this.document.getElementById('totalSales').textContent = `$${records.reduce((total, record) => total + record.totalPrice, 0)}`;
+    }
+
+    cleanForm() {
+        this.document.getElementById('product').value = '';
+        this.document.getElementById('amount').value = 0;
+        this.document.getElementById('unitPrice').value = 0;
+    }
+
+    /**
+     * 
+     * @param {string} date 
+     * @param {[{date: Date, product: string, amount: integer, unitPrice: float, totalPrice: float}]} records 
+     */
+    recordFromListItemToUpdateForm(date, records) {
+        const listItem = this.document.getElementById(date);
+        const record = records.find(record => record.date === date);
+
+        if (record != undefined) {
+            listItem.innerHTML = `
+            <form class="form-inline">
+                <div class="form-group mx-sm-3 mb-2">
+                    <input type="text" class="form-control" id="product_${record.date}" value="${record.product}">
+                </div>
+                <div class="form-group mx-sm-3 mb-2">
+                    <input type="number" class="form-control" id="amount_${record.date}" value="${record.amount}">
+                </div>
+                <div class="form-group mx-sm-3 mb-2">
+                    <input type="number" class="form-control" id="unitPrice_${record.date}" value="${record.unitPrice}">
+                </div>
+                <button type="submit" class="btn btn-primary mb-2" id="updateRecordBtn_${record.date}">Actualizar</button>
+            </form>
+            `;
+            const self = this;
+            this.document.getElementById(`updateRecordBtn_${record.date}`).onclick = () => {
+                var dateAsFilter = date;
+                var product = self.document.getElementById(`product_${record.date}`).value;
+                var amount = parseInt(self.document.getElementById(`amount_${record.date}`).value);
+                var unitPrice = parseFloat(self.document.getElementById(`unitPrice_${record.date}`).value);
+
+                new RecordsManager().updateRecord(dateAsFilter, product, amount, unitPrice, (response) => {
+                    if (!response.success) {
+                        alert('Error: la solicitud de edición no se completó con éxito. Revise la consola para más detalles.');
+                    }
+
+                    new RecordsManager().recordsCharger(record.date, (response) => {
+                        if (!response.success) {
+                            alert('Error: nos se ha podido recuperar los datos. Revise la consola para más detalles.');
+                            return;
+                        }
+
+                        self.reloadList(response.records);
+                    });
+                });
+            };
         }
     }
-}
 
-// Auxiliar of DomManipulator
-function calcularTotalVentas() {
-    // Asegurarse de que la propiedad valorTotal esté presente en cada registro
-    registros.forEach(registro => {
-        if (!registro.hasOwnProperty('valorTotal')) {
-            registro.valorTotal = registro.cantidad * registro.valorUnitario;
-        }
-    });
-
-    // Calcular el total de ventas sumando el valorTotal de cada registro
-    return registros.reduce((total, registro) => total + registro.valorTotal, 0);
-}
-
-// DomManipulator
-function actualizarTotalVentas() {
-    totalVentas = calcularTotalVentas();
-    document.getElementById('totalVentas').textContent = `$${totalVentas}`;
-}
-
-// DomManipulation -> RecordManager
-function reload() {
-    limpiarForm(); // DomManipulation 
-    cargarRegistrosdesdeBD(); // RecordManager
-    actualizarListaRegistros(); // DomManipulation
-    actualizarTotalVentas(); // DomManipulation
-}
-
-// DomManipulation
-function limpiarForm() {
-    document.getElementById('producto').value = '';
-    document.getElementById('cantidad').value = '';
-    document.getElementById('valorUnitario').value = '';
-}
-
-// DomManipulation
-function updateThis(fecha) {
-    const listItem = document.getElementById(fecha);
-    const registro = registros.find(registro => registro.fecha == fecha);
-    
-    // DomManipulation
-    listItem.innerHTML = `
-        <form class="form-inline">
-            <div class="form-group mx-sm-3 mb-2">
-                <input type="text" class="form-control" id="producto_${fecha}" value="${registro.producto}">
-            </div>
-            <div class="form-group mx-sm-3 mb-2">
-                <input type="number" class="form-control" id="cantidad_${fecha}" value="${registro.cantidad}">
-            </div>
-            <div class="form-group mx-sm-3 mb-2">
-                <input type="number" class="form-control" id="valorUnitario_${fecha}" value="${registro.valorUnitario}">
-            </div>
-            <button type="submit" class="btn btn-primary mb-2" id="updateRecordBtn_${fecha}>Actualizar</button>
-        </form>
-    `;
-    document.getElementById(`updateRecordBtn_${fecha}`).onclick = function() {
-        updateRecord(fecha);
-    }
 }

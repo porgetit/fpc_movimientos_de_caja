@@ -1,56 +1,41 @@
-class FormValidator {
-    constructor(product, amount, unitPrice) {
-        this.product = product;
-        this.amount = amount;
-        this.unitPrice = unitPrice;
-    }
+export default class FormValidator {
+    constructor() {}
 
-    validateProduct() {
-        // Método para validar que el contenido del campo producto corresponda con lo esperado
-    }
-
-    isProductSecure() {
-        // Método para validar la seguridad de la entrada del campo product
-    }
-
-    validateAmount() {
-        // Método para validar que el contenido del campo amount corresponda con lo esperado
+    // Método para validar que el contenido del campo product corresponda con lo esperado
+    validateProduct(product) {
+        return this.isProductSecure(product);
     }
     
-    isAmountSecure() {
-        // Método para validad la seguridad de la entrada del campo amount
+    // Método para validar la seguridad de la entrada del campo product
+    isProductSecure(product) {
+        var regex = /[;'\\]/;
+        return !regex.test(product);
     }
 
-    validateUnitPrice() {
-        // Método para validar que el contenido del campo unitPrice se corresponde con lo esperado
+    // Método para validar que el contenido del campo amount corresponda con lo esperado
+    validateAmount(amount) {
+        return (amount >= 1) && (!isNaN(amount)) && this.isAmountSecure(amount);
+    }
+    
+    // Método para validad la seguridad de la entrada del campo amount
+    isAmountSecure(amount) { // <-- Implementar seguridad luego
+        return true;
     }
 
-    isUnitPriceSecure() {
-        // Método para validar la sguridad de la entrada del campo unitPrice
+    // Método para validar que el contenido del campo unitPrice se corresponde con lo esperado
+    validateUnitPrice(unitPrice) {
+        if (Math.abs(unitPrice) % 50 !== 0) {
+            if (!confirm(`¿Está seguro de que el precio unitario es ${unitPrice}?`)) {
+                return false;
+            }
+        } 
+        
+        return (Math.abs(unitPrice) >= 1) && (!isNaN(unitPrice)) && this.isUnitPriceSecure(unitPrice);
     }
 
-}
-
-// FormValidation
-function checkValues() {
-    // Obtener valores del formulario
-    const producto = document.getElementById('producto').value;
-    const cantidad = parseInt(document.getElementById('cantidad').value);
-    const valorUnitario = parseFloat(document.getElementById('valorUnitario').value);
-
-    // Validar que la cantidad y el valor unitario sean números positivos
-    if (isNaN(cantidad) || cantidad <= 0 || isNaN(valorUnitario) || valorUnitario <= 0) {
-        alert('Por favor, ingrese valores válidos para cantidad y valor unitario.');
-        return;
+    // Método para validar la sguridad de la entrada del campo unitPrice
+    isUnitPriceSecure(unitPrice) { // <-- Implementar seguridad luego
+        return true;
     }
 
-    // Verificar si el valor unitario es un múltiplo de 50
-    if (valorUnitario % 50 !== 0) {
-        const confirmacion = confirm('El valor unitario no es un múltiplo de 50. ¿Desea continuar con este registro?');
-        if (!confirmacion) {
-            return; // Salir de la función si el usuario elige no continuar
-        }
-    }
-
-    agregarRegistro(producto, cantidad, valorUnitario);    
 }
