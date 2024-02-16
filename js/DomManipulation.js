@@ -23,11 +23,11 @@ export default class DomManipulator {
         const list = this.document.getElementById('recordsList');
         
         if (list === null) {
-            console.log(`Error: El elemento list es nulo.`);
+            console.log(`Error: el elemento list: ${typeof(list)}.`);
             return;
         }
 
-        list.innerHTML = '';
+        this.cleanElement(list);
 
         // Ordenar los registros por fecha de forma ascendente antes de mostrarlos por pantalla
         records.sort((a, b) => new Date(a.date) - new Date(b.date));
@@ -40,7 +40,7 @@ export default class DomManipulator {
             list.appendChild(listItem);
 
             this.document.getElementById(`deleteRecordBtn_${record.date}`).onclick = () => {
-                const self = this;
+                const self = {this: this, list: list};
                 new RecordsManager().deleteRecord(record.date, (response) => {
                     if (!response.success) {
                         alert('Error: la solicitud de eliminación no se completó con éxito. Revise la consola para más detalles.');
@@ -49,7 +49,15 @@ export default class DomManipulator {
                     
                     new RecordsManager().recordsCharger(record.date, (response) => {
                         if (!response.success) {
-                            alert('Error: nos se ha podido recuperar los datos. Revise la consola para más detalles.');
+                            alert('Error: nos se han podido recuperar los datos. Revise la consola para más detalles.');
+                            self.list.innerHTML = '';
+                            // Hay que hacer que se borre la lista cuando no hayan registros
+                            return;
+                        }
+
+                        if (!response.records.length > 0) {
+                            alert('Error: no hay datos para la fecha especificada.');
+                            self.cleanElement(self.list);
                             return;
                         }
 
@@ -62,6 +70,10 @@ export default class DomManipulator {
                 this.recordFromListItemToUpdateForm(date, records);
             };
         }
+    }
+
+    cleanElement(element) {
+        element.innerHTML = '';
     }
 
     setTotalSales(records) {

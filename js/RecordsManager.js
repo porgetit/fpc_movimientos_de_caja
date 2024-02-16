@@ -28,16 +28,12 @@ export default class RecordsManager {
                             
                             callback({success: true, records: records});
                         } else {
-                            console.log(`Response error: ${response.error}`); // <--<< creo que esto pasa cuando no hay datos que coincidan
+                            console.log(`${response.error}`); // <--<< creo que esto pasa cuando no hay datos que coincidan
+                            callback({success: false, records: []});
                         }
                     } catch (error) {
-                        if (error instanceof ReferenceError) {
-                            console.log(`Reference error: ${error.message} -> ${error.stack}`);
-                        } else if (error instanceof TypeError) {
-                            console.log(`TypeError error: ${error.message} -> ${error.stack}`);
-                        } else {
-                            console.log(`Unexpected error: ${error.message} -> ${error.stack}`);
-                        }
+                        console.log(`${error.name}: ${error.message} --> ${error.stack}`);
+                        callback({success: false, records: []});
                     }
                 } else if (this.status >= 400 && this.status < 500) {
                     // Error del cliente
