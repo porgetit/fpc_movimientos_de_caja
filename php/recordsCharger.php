@@ -4,14 +4,14 @@ include 'crud/recover.php';
 
 try {
     // Verificar si se ha recibido la fecha por POST desde JavaScript
-    if(isset($_POST['fecha'])) {
-        $fecha = $_POST['fecha'];
+    if(isset($_POST['dateAsFilter'])) {
+        $date = $_POST['dateAsFilter'];
 
         // Crear una instancia de la clase Recover
         $recover = new Recover();
 
         // Llamar al método selectAll con la fecha recibida por POST
-        $result = $recover->selectAll($fecha);
+        $result = $recover->selectAll($date);
 
         // Procesar los resultados
         $data = array();

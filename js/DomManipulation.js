@@ -20,7 +20,13 @@ export default class DomManipulator {
      * @todo Refactorizar para evitar sobrecargar de responsabilidades. Ejemplo, operaciones de recarga dentro de la asignación de los eventos onclick
      */
     reloadList(records) {
-        const list = this.document.getElementById('list');
+        const list = this.document.getElementById('recordsList');
+        
+        if (list === null) {
+            console.log(`Error: El elemento list es nulo.`);
+            return;
+        }
+
         list.innerHTML = '';
 
         // Ordenar los registros por fecha de forma ascendente antes de mostrarlos por pantalla

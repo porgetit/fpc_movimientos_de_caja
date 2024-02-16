@@ -4,7 +4,7 @@ export default class RecordsManager {
     // Método para cargar los registros desde la BD usando la fecha indicada como filtro
     recordsCharger(dateAsFilter, callback) {
         var xhttp = new XMLHttpRequest();
-        var url = '../php/recordsCharger.php';
+        var url = '../fpc/php/recordsCharger.php';
         var data = new FormData();
         data.append('dateAsFilter', dateAsFilter);
 
@@ -18,20 +18,26 @@ export default class RecordsManager {
                         if (response.success) {
                             records = response.data.map(datum => {
                                 return {
-                                    date: datum.date,
-                                    product: datum.product,
-                                    amount: datum.amount,
-                                    unitPrice: datum.unitPrice,
-                                    totalPrice: datum.amount * datum.unitPrice
+                                    date: datum.fecha,
+                                    product: datum.producto,
+                                    amount: datum.cantidad,
+                                    unitPrice: datum.valorUnitario,
+                                    totalPrice: datum.cantidad * datum.valorUnitario
                                 }
                             });
-
+                            
                             callback({success: true, records: records});
                         } else {
                             console.log(`Response error: ${response.error}`); // <--<< creo que esto pasa cuando no hay datos que coincidan
                         }
                     } catch (error) {
-                        console.log(`JSON.parse error: ${error}`);
+                        if (error instanceof ReferenceError) {
+                            console.log(`Reference error: ${error.message} -> ${error.stack}`);
+                        } else if (error instanceof TypeError) {
+                            console.log(`TypeError error: ${error.message} -> ${error.stack}`);
+                        } else {
+                            console.log(`Unexpected error: ${error.message} -> ${error.stack}`);
+                        }
                     }
                 } else if (this.status >= 400 && this.status < 500) {
                     // Error del cliente
@@ -56,7 +62,7 @@ export default class RecordsManager {
     // Método para agregar un nuevo registro
     addRecord(product, amount, unitPrice, callback) {
         var xhttp = new XMLHttpRequest();
-        var url = '../php/addRecord.php';
+        var url = '../fpc/php/addRecord.php';
         var data = new FormData(); // Datos del nuevo producto
         data.append('product', product);
         data.append('amount', amount);
@@ -91,7 +97,7 @@ export default class RecordsManager {
     deleteRecord(dateAsFilter, callback) {
         if (confirm(`¿Seguro que desea eliminar el registro '${dateAsFilter}'`)) {
             var xhttp = new XMLHttpRequest();
-            var url = '../php/deleteRecord.php';
+            var url = '../fpc/php/deleteRecord.php';
             var data = new FormData().append('dateAsFilter', dateAsFilter);
 
             xhttp.onreadystatechange = function() {
@@ -134,7 +140,7 @@ export default class RecordsManager {
     updateRecord(dateAsFilter, product, amount, unitPrice, callback) {
         if (confirm(`¿Seguro que desea modificar el registro '${dateAsFilter}'`)) {
             var xhttp = new XMLHttpRequest();
-            var url = '../php/updateRecord.php';
+            var url = '../fpc/php/updateRecord.php';
             var data = new FormData();
             data.append('dateAsFilter', dateAsFilter);
             data.append('product', product);
