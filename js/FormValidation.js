@@ -1,5 +1,14 @@
+
+/**
+ * @todo Agregar verdadero algoritmos de seguridad a los métodos de isSmthingSecure. Actualmente solo hay una validación parcial para el parámetro producto, sin embargo, en el caso de amount y unitPrice, siempre retorna true
+ */
 export default class FormValidator {
     constructor() {}
+
+    // Método de entrada para la validación
+    validateForm(product, amount, unitPrice) {
+        return this.validateProduct(product) && this.validateAmount(amount) && this.validateUnitPrice(unitPrice);
+    }
 
     // Método para validar que el contenido del campo product corresponda con lo esperado
     validateProduct(product) {
@@ -34,7 +43,7 @@ export default class FormValidator {
     }
 
     // Método para validar la sguridad de la entrada del campo unitPrice
-    isUnitPriceSecure(unitPrice) { // <-- Implementar seguridad luego
+    isUnitPriceSecure(unitPrice) {
         return true;
     }
 

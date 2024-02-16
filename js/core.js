@@ -1,22 +1,24 @@
-// Variables globales para almacenar registros y total de ventas
-let records = [];
-let totalSales = 0.00;
+import DomManipulator from "./DomManipulation";
+import RecordsManager from "./RecordsManager";
 
 // Initialization
 document.addEventListener('DOMContentLoaded', function() {
-    // Esto son manipulaciones del DOM
-    // ----------------------------------------------------------------------------------------
-    document.getElementById('agregarRegistroBtn').onclick = function() {
-        checkValues();
-    }; 
-    var year = new Date().getFullYear();
-    document.getElementById('copyright').innerHTML = `© ${year -1} - ${year} Copyright:
-    <a class="text-dark" href="https://kevinesguerracardona.com/">kevinesguerracardona.com</a>`
-    // -----------------------------------------------------------------------------------------
-    cargarRegistrosdesdeBD();
+    document.addEventListener('DOMContentLoaded', () => {
+        new DomManipulator(document).whenDomContentLoadedInitProtocol();
+    });
 });
 
-// Configuration
-document.getElementById('fecha').addEventListener('change', function() {
-    cargarRegistrosdesdeBD(); // Y actualizarListaRegistros
+
+// Config
+document.getElementById('date').addEventListener('change', () => {
+    const self = document.getElementById('date');
+    new RecordsManager().recordsCharger(self.value, (response) => {
+        if(!response.success) {
+            alert('Error: no se ha podido recuperar los datos. Revise la consola para más detalles.');
+            return;
+        }
+        let DomManipulator = new DomManipulator(document);
+        DomManipulator.reloadList(response.records);
+        DomManipulator.setTotalSales(response.records);
+    });
 });

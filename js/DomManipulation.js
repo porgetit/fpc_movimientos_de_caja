@@ -1,4 +1,5 @@
 import RecordsManager from "./RecordsManager";
+import FormValidator from "./FormValidation";
 
 /**
  * @todo Debo agregar métodos para formatear las entradas a medida que se ingresan, por ejemplo, aplicar capitalizaciones a la entrada de producto o formato de moneda a la entrada de valor unitario, este último sin que se modifique internamente el valor o asegurandome de que se pase el valor adecuado.
@@ -21,6 +22,9 @@ export default class DomManipulator {
     reloadList(records) {
         const list = this.document.getElementById('list');
         list.innerHTML = '';
+
+        // Ordenar los registros por fecha de forma ascendente antes de mostrarlos por pantalla
+        records.sort((a, b) => new Date(a.date) - new Date(b.date));
 
         for (let record of records) {
             const listItem = this.document.createElement('li');
@@ -52,9 +56,6 @@ export default class DomManipulator {
                 this.recordFromListItemToUpdateForm(date, records);
             };
         }
-
-        // Ordenar los registros por fecha de forma ascendente
-        records.sort((a, b) => new Date(a.date) - new Date(b.date));
     }
 
     setTotalSales(records) {
@@ -120,6 +121,63 @@ export default class DomManipulator {
                 });
             };
         }
+    }
+
+    whenDomContentLoadedInitProtocol() {
+        /**
+         * Primero, agregamos el evento onclick al elemento addRecordBtn del formulario principal
+         */
+        this.document.getElementById('addRecordBtn').onclick = () => {
+            var product = this.document.getElementById('product').value;
+            var amount = this.document.getElementById('amount').value;
+            var unitPrice = this.document.getElementById('unitPrice').value;
+
+            if (!new FormValidator().validateForm(product, amount, unitPrice)) {
+                alert('Error de validación, por favor verifique los datos ingresados.');
+            } else {
+                let RecordsManager = new RecordsManager();
+
+                RecordsManager.addRecord(product, amount, unitPrice, (response) => {
+                    if (!response.success) {
+                        alert('Error: la solicitud de inserición no se completó con éxito. Revise la consola para más detalles.');
+                    }
+
+                    RecordsManager.recordsCharger(this.document.getElementById('date').value, (response) => {
+                        if (!response.success) {
+                            alert('Error: no se ha podido recuperar los datos. Revise la consola para más detalles.');
+                            return;
+                        }
+            
+                        this.reloadList(response.records);
+                    });
+
+                    this.setTotalSales(response.records);
+
+                    this.cleanForm();
+
+                });
+            }
+        };
+        
+        /**
+         * Segundo, cargamos los registros desde la base de datos
+         */
+
+        new RecordsManager().recordsCharger(this.document.getElementById('date').value, (response) => {
+            if (!response.success) {
+                alert('Error: no se ha podido recuperar los datos. Revise la consola para más detalles.');
+                return;
+            }
+
+            this.reloadList(response.records);
+        });
+
+        /**
+         * Tercero, modificamos el contenido del elemento copyright del footer
+         */
+        var year = new Date().getFullYear();
+        document.getElementById('copyright').innerHTML = `© ${year} Copyright:
+        <a class="text-dark" href="https://kevinesguerracardona.com/">Kevin Esguerra Cardona</a>`;
     }
 
 }
